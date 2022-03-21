@@ -2,3 +2,4 @@ pandas
 pylint
 black
 dash
+dash_bootstrap_components
