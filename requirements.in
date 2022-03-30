@@ -3,3 +3,4 @@ pylint
 black
 dash
 dash_bootstrap_components
+flask_caching
