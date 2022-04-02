@@ -4,14 +4,16 @@ visit http://127.0.0.1:8050/ in your web browser.
 
 """
 
-from dash import Dash, html, dcc
-from dash.dependencies import Input, Output
-import plotly.express as px
-import pandas as pd
+import time
+from dash import Dash, html, dcc, dash_table  # type: ignore
+from dash.dependencies import Input, Output  # type: ignore
+import plotly.express as px  # type: ignore
+import pandas as pd  # type: ignore
 
 app = Dash(__name__, assets_folder="../assets")
 
-# Loading data
+# źródło danych
+# szczepienia.pzh.gov.pl/analiza-ryzyka-zgonu-wsrod-zaszczepionych-i-niezaszczepionych
 with open(
     "data/raw_data/ewp_dsh_zgony_po_szczep_20220127.csv",
     encoding="utf8",
@@ -52,35 +54,62 @@ app.layout = html.Div(
                 ),
             ]
         ),
+        html.Div([dcc.Checklist(id="select_columns")]),
         html.Div(dcc.Graph(id="chart")),
+        html.Div(dash_table.DataTable(id="tbl")),
         # dcc.Store przechowuje pośrednie wyniki obliczeń
-        dcc.Store(id='dane-preprocessing')
+        dcc.Store(id="dane-preprocessing"),
     ]
 )
 
 
-@app.callback(Output('dane-preprocessing', 'data'),
-              [Input("gender-selection", "value"), Input("age-selection", "value")])
-def clean_data(selected_gender_value, age_selection_value):
-     # "dlugie obliczenia"
-     tmp = df[df["plec"].isin(selected_gender_value)]
-     tmp = tmp[tmp["wiek"] <= age_selection_value[1]]
-     tmp = tmp[tmp["wiek"] >= age_selection_value[0]]
-     tmp = (
-         tmp.groupby("dawka_ost")
-             .agg({"liczba_zaraportowanych_zgonow": sum})
-             .reset_index()
-     )
-
-     return tmp.to_json(date_format='iso', orient='split')
-
-
-# decorator that enables reactivity
 @app.callback(
-    Output("chart", "figure"),
-    Input('dane-preprocessing', 'data'),
+    Output("dane-preprocessing", "data"),
+    [Input("gender-selection", "value"), Input("age-selection", "value")],
 )
-def update_graph(jsonified_cleaned_data):
+def clean_data(selected_gender_value, age_selection_value):
+    """
+
+    :param selected_gender_value:
+    :param age_selection_value:
+    :return:
+    """
+    tmp = df.loc[
+        df.loc[:, "plec"].isin(selected_gender_value), :  # pylint: disable=E1101
+    ]
+    tmp = tmp[tmp.loc[:, "wiek"] <= age_selection_value[1]]
+    tmp = tmp[tmp.loc[:, "wiek"] >= age_selection_value[0]]
+    tmp = (
+        tmp.groupby("dawka_ost")
+        .agg({"liczba_zaraportowanych_zgonow": sum})
+        .reset_index()
+    )
+    # "dlugie obliczenia"
+    time.sleep(3)
+
+    return tmp.to_json(date_format="iso", orient="split")
+
+
+@app.callback(
+    [Output("select_columns", "value"), Output("select_columns", "options")],
+    Input("dane-preprocessing", "data"),
+)
+def update_available_columns(jsonified_cleaned_data):
+    """
+
+    :param jsonified_cleaned_data:
+    :return:
+    """
+    df_preprocessed = pd.read_json(jsonified_cleaned_data, orient="split")
+
+    return df_preprocessed.columns, df_preprocessed.columns
+
+
+@app.callback(
+    [Output("chart", "figure"), Output("tbl", "data")],
+    [Input("dane-preprocessing", "data"), Input("select_columns", "value")],
+)
+def update_graph(jsonified_cleaned_data, selected_columns):
     """
     Updates the plot according to the selected values
 
@@ -88,7 +117,7 @@ def update_graph(jsonified_cleaned_data):
     :param age_selection_value:
     :return: updated plotly figure
     """
-    df_preprocessed = pd.read_json(jsonified_cleaned_data, orient='split')
+    df_preprocessed = pd.read_json(jsonified_cleaned_data, orient="split")
 
     fig = px.bar(
         df_preprocessed,
@@ -104,7 +133,7 @@ def update_graph(jsonified_cleaned_data):
 
     fig.update_layout(barmode="overlay")
 
-    return fig
+    return fig, df_preprocessed[selected_columns].to_dict("rows")
 
 
 if __name__ == "__main__":
