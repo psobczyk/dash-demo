@@ -1,18 +1,14 @@
 """
-Run this app with `python app.py` and
+Run this app with `python3 src/app_with_state.py` and
 visit http://127.0.0.1:8050/ in your web browser.
-
-Każda akcja powoduje konieczność ,,kosztownego przeliczenia" trwającego 3 sekundy.
 
 """
 
 import time
-from typing import Any
-import plotly.express as px  # type: ignore
-import pandas as pd  # type: ignore
 from dash import Dash, html, dcc, dash_table  # type: ignore
 from dash.dependencies import Input, Output  # type: ignore
-
+import plotly.express as px  # type: ignore
+import pandas as pd  # type: ignore
 
 app = Dash(__name__, assets_folder="../assets")
 
@@ -23,7 +19,7 @@ with open(
     encoding="utf8",
     errors="ignore",
 ) as f:
-    df: pd.DataFrame = pd.read_csv(f, sep=";")
+    df = pd.read_csv(f, sep=";")
 
 
 # App layout
@@ -58,24 +54,25 @@ app.layout = html.Div(
                 ),
             ]
         ),
+        html.Div([dcc.Checklist(id="select_columns")]),
         html.Div(dcc.Graph(id="chart")),
         html.Div(dash_table.DataTable(id="tbl")),
+        # dcc.Store przechowuje pośrednie wyniki obliczeń
+        dcc.Store(id="dane-preprocessing"),
     ]
 )
 
 
-# decorator that enables reactivity
 @app.callback(
-    [Output("chart", "figure"), Output("tbl", "data")],
+    Output("dane-preprocessing", "data"),
     [Input("gender-selection", "value"), Input("age-selection", "value")],
 )
-def update_graph(selected_gender_value: str, age_selection_value: str) -> Any:
+def clean_data(selected_gender_value, age_selection_value):
     """
-    Updates the plot according to the selected values
 
     :param selected_gender_value:
     :param age_selection_value:
-    :return: updated plotly figure
+    :return:
     """
     tmp = df.loc[  # pylint: disable=E1101
         df.loc[:, "plec"].isin(selected_gender_value), :  # pylint: disable=E1101
@@ -90,8 +87,40 @@ def update_graph(selected_gender_value: str, age_selection_value: str) -> Any:
     # "dlugie obliczenia"
     time.sleep(3)
 
+    return tmp.to_json(date_format="iso", orient="split")
+
+
+@app.callback(
+    [Output("select_columns", "value"), Output("select_columns", "options")],
+    Input("dane-preprocessing", "data"),
+)
+def update_available_columns(jsonified_cleaned_data):
+    """
+
+    :param jsonified_cleaned_data:
+    :return:
+    """
+    df_preprocessed = pd.read_json(jsonified_cleaned_data, orient="split")
+
+    return df_preprocessed.columns, df_preprocessed.columns
+
+
+@app.callback(
+    [Output("chart", "figure"), Output("tbl", "data")],
+    [Input("dane-preprocessing", "data"), Input("select_columns", "value")],
+)
+def update_graph(jsonified_cleaned_data, selected_columns):
+    """
+    Updates the plot according to the selected values
+
+    :param selected_gender_value:
+    :param age_selection_value:
+    :return: updated plotly figure
+    """
+    df_preprocessed = pd.read_json(jsonified_cleaned_data, orient="split")
+
     fig = px.bar(
-        tmp,
+        df_preprocessed,
         x="dawka_ost",
         y="liczba_zaraportowanych_zgonow",
         color="dawka_ost",
@@ -104,7 +133,7 @@ def update_graph(selected_gender_value: str, age_selection_value: str) -> Any:
 
     fig.update_layout(barmode="overlay")
 
-    return fig, tmp.to_dict("rows")
+    return fig, df_preprocessed[selected_columns].to_dict("rows")
 
 
 if __name__ == "__main__":

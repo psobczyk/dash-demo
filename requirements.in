@@ -1,5 +1,7 @@
 pandas
-pylint
-black
 dash
 dash_bootstrap_components
+flask_caching
+pylint
+black
+mypy
