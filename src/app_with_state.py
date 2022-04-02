@@ -74,7 +74,7 @@ def clean_data(selected_gender_value, age_selection_value):
     :param age_selection_value:
     :return:
     """
-    tmp = df.loc[
+    tmp = df.loc[  # pylint: disable=E1101
         df.loc[:, "plec"].isin(selected_gender_value), :  # pylint: disable=E1101
     ]
     tmp = tmp[tmp.loc[:, "wiek"] <= age_selection_value[1]]
