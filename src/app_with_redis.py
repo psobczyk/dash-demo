@@ -82,6 +82,24 @@ app.layout = html.Div(
 )
 
 
+def filter_age_gender(df, age, gender):
+    """
+
+    :param df:
+    :param age:
+    :param gender:
+    :return:
+    """
+    if age is None:
+        age = (min(df.wiek), max(df.wiek))
+    if gender is None:
+        gender = df.plec.unique()
+    tmp = df.loc[df.loc[:, "plec"].isin(gender), :]  # pylint: disable=E1101
+    tmp = tmp[tmp.loc[:, "wiek"] <= age[1]]
+    tmp = tmp[tmp.loc[:, "wiek"] >= age[0]]
+    return tmp
+
+
 # perform expensive computations in this "global store"
 # these computations are cached in a globally available
 # redis memory store which is available across processes
@@ -96,9 +114,7 @@ def global_store(value):
     gender = value["gender"]
     age = value["age"]
 
-    tmp = df.loc[df.loc[:, "plec"].isin(gender), :]  # pylint: disable=E1101
-    tmp = tmp[tmp.loc[:, "wiek"] <= age[1]]
-    tmp = tmp[tmp.loc[:, "wiek"] >= age[0]]
+    tmp = filter_age_gender(df, age, gender)
     tmp = (
         tmp.groupby("dawka_ost")
         .agg({"liczba_zaraportowanych_zgonow": sum})
