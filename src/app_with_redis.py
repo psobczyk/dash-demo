@@ -25,7 +25,7 @@ server = app.server
 CACHE_CONFIG = {
     # try 'FileSystemCache' if you don't want to setup redis
     "CACHE_TYPE": "redis",
-    "CACHE_REDIS_URL": os.environ.get("REDIS_URL", "redis://localhost:6379"),
+    "CACHE_REDIS_URL": os.getenv("REDIS_URL", "redis://localhost:6379"),
 }
 cache = Cache()
 cache.init_app(app.server, config=CACHE_CONFIG)
@@ -120,7 +120,9 @@ def compute_value(selected_gender_value, age_selection_value):
     :param age_selection_value:
     :return:
     """
-    global_store({"gender": selected_gender_value, "age": age_selection_value})
+    global_store(
+        {"gender": sorted(selected_gender_value), "age": sorted(age_selection_value)}
+    )
 
     return {"gender": selected_gender_value, "age": age_selection_value}
 
