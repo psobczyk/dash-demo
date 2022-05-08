@@ -82,19 +82,19 @@ app.layout = html.Div(
 )
 
 
-def filter_age_gender(df, age, gender):
+def filter_age_gender(df_input, age, gender):
     """
 
-    :param df:
+    :param df_input:
     :param age:
     :param gender:
     :return:
     """
     if age is None:
-        age = (min(df.wiek), max(df.wiek))
+        age = (min(df_input.wiek), max(df_input.wiek))
     if gender is None:
-        gender = df.plec.unique()
-    tmp = df.loc[df.loc[:, "plec"].isin(gender), :]  # pylint: disable=E1101
+        gender = df_input.plec.unique()
+    tmp = df_input.loc[df_input.loc[:, "plec"].isin(gender), :]  # pylint: disable=E1101
     tmp = tmp[tmp.loc[:, "wiek"] <= age[1]]
     tmp = tmp[tmp.loc[:, "wiek"] >= age[0]]
     return tmp
