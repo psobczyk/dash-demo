@@ -120,7 +120,9 @@ def compute_value(selected_gender_value, age_selection_value):
     :param age_selection_value:
     :return:
     """
-    global_store({"gender": selected_gender_value, "age": age_selection_value})
+    global_store(
+        {"gender": sorted(selected_gender_value), "age": sorted(age_selection_value)}
+    )
 
     return {"gender": selected_gender_value, "age": age_selection_value}
 

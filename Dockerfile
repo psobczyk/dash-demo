@@ -19,4 +19,4 @@ RUN pip3 install -r requirements.txt
 COPY . ./
 
 # Finally, run gunicorn.
-CMD [ "gunicorn", "--workers=5", "--threads=1", "-b 0.0.0.0:8000", "index:application"]
+CMD [ "gunicorn", "--workers=5", "--threads=1", "-b 0.0.0.0:8000", "index:app"]
