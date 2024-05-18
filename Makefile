@@ -18,13 +18,14 @@ make-requirements: requirements.in
 	pip-compile --generate-hashes requirements.in
 
 venv: requirements.txt
-	python3 -m venv .venv
+	python3.8 -m venv .venv
 	. .venv/bin/activate; \
 	pip install --upgrade virtualenv; \
-	pip install --upgrade pip setuptools wheel; \
+	pip install --upgrade pip pip-tools setuptools wheel; \
 	pip install -r requirements.txt
 
-clean-venv:
+.PHONY:
+venv-clean:
 	rm -rf .venv
 
 .PHONY: docker-build
@@ -34,3 +35,7 @@ test:
 .PHONY: venv
 black:
 	black src/
+
+.PHONY: venv
+pylint:
+	pylint src/
