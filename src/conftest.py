@@ -2,6 +2,7 @@
 Getting data for unit tests
 
 """
+
 import pytest  # type: ignore
 import pandas as pd  # type: ignore
 

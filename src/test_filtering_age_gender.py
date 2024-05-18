@@ -2,6 +2,7 @@
 Testing simple filtering function
 
 """
+
 from app_with_redis import filter_age_gender
 
 

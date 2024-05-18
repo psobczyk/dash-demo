@@ -13,7 +13,9 @@ WORKDIR wd
 
 # Install Python dependencies.
 COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+RUN pip install --upgrade virtualenv; \
+    pip install --upgrade pip pip-tools setuptools wheel; \
+    pip3 install -r requirements.txt
 
 # Copy the rest of the codebase into the image
 COPY . ./
