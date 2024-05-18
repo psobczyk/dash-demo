@@ -30,3 +30,7 @@ clean-venv:
 .PHONY: docker-build
 test: 
 	docker run --rm $(DOCKER_IMAGE) python -m pytest 
+
+.PHONY: venv
+black:
+	black src/
