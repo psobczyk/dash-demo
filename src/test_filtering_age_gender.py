@@ -3,6 +3,7 @@ Testing simple filtering function
 
 """
 from app_with_redis import filter_age_gender
+import pytest
 
 
 def test_male_data(example_covid_data):  # pylint: disable=W0621

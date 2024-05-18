@@ -13,9 +13,9 @@ and visit http://127.0.0.1:8050/ in your web browser.
 ### Building and running basic app docker
 
 ```bash
-docker build -t uam-dash .
+make docker-build
 
-docker run --rm -p 8000:8000 uam-dash
+make docker-run
 ```
 
 ### Running redis based app with Docker
@@ -23,6 +23,8 @@ docker run --rm -p 8000:8000 uam-dash
 ```bash
 docker-compose build
 docker-compose up
+# or
+make docker-run-compose
 ```
 
 Cleanup

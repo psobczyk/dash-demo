@@ -84,7 +84,7 @@ def update_graph(selected_gender_value: str, age_selection_value: str) -> Any:
     tmp = tmp[tmp.loc[:, "wiek"] >= age_selection_value[0]]
     tmp = (
         tmp.groupby("dawka_ost")
-        .agg({"liczba_zaraportowanych_zgonow": sum})
+        .agg({"liczba_zaraportowanych_zgonow": "sum"})
         .reset_index()
     )
     # "dlugie obliczenia"
@@ -104,7 +104,7 @@ def update_graph(selected_gender_value: str, age_selection_value: str) -> Any:
 
     fig.update_layout(barmode="overlay")
 
-    return fig, tmp.to_dict("rows")
+    return fig, tmp.to_dict("records")
 
 
 if __name__ == "__main__":
