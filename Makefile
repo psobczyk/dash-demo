@@ -2,7 +2,6 @@
 DOCKER_IMAGE = "uam_dash"
 
 # build docker image
-.PHONY:
 docker-build:
 	docker build -t $(DOCKER_IMAGE) .
 
