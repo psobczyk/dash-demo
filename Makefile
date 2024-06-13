@@ -4,9 +4,8 @@ DOCKER_IMAGE_DEBUG = "uam_dash_debug"
 DOCKERFILE_DEBUG = "Dockerfile.debug"
 
 # create virtual environment
-requirements.txt: requirements.in
-	pip install pip-tools
-	pip-compile --generate-hashes requirements.in
+%.txt: %.in
+	pip-compile --generate-hashes $<
 
 .PHONY:
 venv: requirements.txt
@@ -15,6 +14,10 @@ venv: requirements.txt
 	pip install --upgrade virtualenv; \
 	pip install --upgrade pip pip-tools setuptools wheel; \
 	pip install -r requirements.txt
+
+.PHONY:
+venv-dev: requirements-dev.txt
+	pip-sync requirements-dev.txt requirements.txt
 
 # build docker image
 .PHONY:
@@ -58,6 +61,10 @@ black:
 .PHONY: venv
 pylint:
 	pylint src/
+
+.PHONY: venv
+mypy:
+	mypy src/
 
 # cleanup
 .PHONY:
