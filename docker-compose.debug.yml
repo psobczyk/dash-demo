@@ -1,0 +1,25 @@
+
+networks:
+  myapp-network:
+services:
+  myapp:
+    networks:
+      - myapp-network
+    image: myapp
+    build:
+      context: .
+      dockerfile: ./Dockerfile.debug_redis
+    command: ["python", "-m", "debugpy", "--wait-for-client", "--listen", "0.0.0.0:5678", "-m",  "gunicorn", "--workers=5", "--threads=1", "-b 0.0.0.0:8000", "index:app_redis"]
+    ports:
+      - 8000:8000
+      - 5678:5678
+    environment:
+      REDIS_URL: redis://myapp-redis:6379
+      FLASK_APP: index.py
+  myapp-redis:
+    container_name: myapp-redis
+    image: redis
+    networks:
+      - myapp-network
+    expose:
+      - "6379"

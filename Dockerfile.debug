@@ -1,0 +1,27 @@
+# Based on https://github.com/thedirtyfew/dash-redis-mwe and https://aka.ms/vscode-docker-python
+
+FROM python:3.8-slim
+
+EXPOSE 8000
+
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
+
+# Install pip requirements
+RUN python -m pip install --upgrade setuptools pip wheel
+COPY requirements.txt .
+RUN python -m pip install -r requirements.txt
+
+WORKDIR /app
+COPY . /app
+
+# Install debugpy for debugging
+RUN pip install debugpy
+
+# dla aplikacji i debuggera
+EXPOSE 8000 5678
+
+CMD ["python", "-m", "debugpy", "--wait-for-client", "--listen", "0.0.0.0:5678", "-m",  "gunicorn", "--workers=5", "--threads=1", "-b 0.0.0.0:8000", "index:app"]
